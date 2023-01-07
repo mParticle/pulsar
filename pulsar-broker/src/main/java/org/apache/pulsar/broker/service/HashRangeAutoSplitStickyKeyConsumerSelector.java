@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentSkipListMap;
+import org.apache.bookkeeper.mledger.Position;
 import org.apache.pulsar.broker.service.BrokerServiceException.ConsumerAssignException;
 import org.apache.pulsar.client.api.Range;
 
@@ -102,7 +103,7 @@ public class HashRangeAutoSplitStickyKeyConsumerSelector implements StickyKeyCon
     }
 
     @Override
-    public Consumer select(int hash) {
+    public Consumer select(int hash, Position entryPosition) {
         if (!rangeMap.isEmpty()) {
             int slot = hash % rangeSize;
             return rangeMap.ceilingEntry(slot).getValue();
