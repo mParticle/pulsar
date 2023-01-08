@@ -18,9 +18,7 @@
  */
 package org.apache.pulsar.broker.service;
 
-import com.google.common.collect.Lists;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -28,11 +26,10 @@ import java.util.Map;
 import org.apache.bookkeeper.mledger.Position;
 import org.apache.pulsar.broker.service.BrokerServiceException.ConsumerAssignException;
 import org.apache.pulsar.client.api.Range;
-import org.apache.pulsar.common.util.Murmur3_32Hash;
 
 /**
  * This implementation tracks outstanding messages for each consumer to ensure messages for the same/similar key
- * are never sent to multiple consumers at the same time, but otherwise provides no specific consumer routing
+ * are never sent to multiple consumers at the same time, but otherwise provides no specific consumer routing.
  */
 public class FirstAvailableStickyKeyConsumerSelector implements StickyKeyConsumerSelector {
 

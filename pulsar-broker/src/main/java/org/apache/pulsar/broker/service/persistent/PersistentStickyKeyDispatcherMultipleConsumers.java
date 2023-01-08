@@ -83,8 +83,6 @@ public class PersistentStickyKeyDispatcherMultipleConsumers extends PersistentDi
         this.keySharedMode = ksm.getKeySharedMode();
         switch (this.keySharedMode) {
         case AUTO_SPLIT:
-            
-        // TODO: Use topic policies to figure out what kind of routing needs doing (e.g.: consistent hash, range split, first available)
             if (conf.isSubscriptionKeySharedUseConsistentHashing()) {
                 selector = new ConsistentHashingStickyKeyConsumerSelector(
                         conf.getSubscriptionKeySharedConsistentHashingReplicaPoints());
