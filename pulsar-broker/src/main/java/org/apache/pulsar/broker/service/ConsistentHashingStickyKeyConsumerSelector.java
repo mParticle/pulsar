@@ -28,6 +28,7 @@ import java.util.NavigableMap;
 import java.util.TreeMap;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import org.apache.bookkeeper.mledger.Position;
 import org.apache.pulsar.broker.service.BrokerServiceException.ConsumerAssignException;
 import org.apache.pulsar.client.api.Range;
 import org.apache.pulsar.common.util.Murmur3_32Hash;
@@ -104,7 +105,7 @@ public class ConsistentHashingStickyKeyConsumerSelector implements StickyKeyCons
     }
 
     @Override
-    public Consumer select(int hash) {
+    public Consumer select(int hash, Position entry) {
         rwLock.readLock().lock();
         try {
             if (hashRing.isEmpty()) {
@@ -123,6 +124,11 @@ public class ConsistentHashingStickyKeyConsumerSelector implements StickyKeyCons
         } finally {
             rwLock.readLock().unlock();
         }
+    }
+
+    @Override
+    public void release(Position entryPosition) {
+        // Not used by this implementation.
     }
 
     @Override

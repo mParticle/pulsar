@@ -21,7 +21,7 @@ package org.apache.pulsar.broker.service;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-
+import org.apache.bookkeeper.mledger.impl.PositionImpl;
 import org.apache.pulsar.broker.service.BrokerServiceException.ConsumerAssignException;
 import org.apache.pulsar.client.api.Range;
 import org.testng.Assert;
@@ -42,12 +42,13 @@ public class ConsistentHashingStickyKeyConsumerSelectorTest {
 
         ConsistentHashingStickyKeyConsumerSelector selector = new ConsistentHashingStickyKeyConsumerSelector(100);
         String key1 = "anyKey";
-        Assert.assertNull(selector.select(key1.getBytes()));
+        PositionImpl position1 = PositionImpl.get(1, 1);
+        Assert.assertNull(selector.select(key1.getBytes(), position1));
 
         Consumer consumer1 = mock(Consumer.class);
         when(consumer1.consumerName()).thenReturn("c1");
         selector.addConsumer(consumer1);
-        Assert.assertEquals(selector.select(key1.getBytes()), consumer1);
+        Assert.assertEquals(selector.select(key1.getBytes(), position1), consumer1);
 
         Consumer consumer2 = mock(Consumer.class);
         when(consumer2.consumerName()).thenReturn("c2");
@@ -59,7 +60,8 @@ public class ConsistentHashingStickyKeyConsumerSelectorTest {
         Map<String, Integer> selectionMap = new HashMap<>();
         for (int i = 0; i < N; i++) {
             String key = UUID.randomUUID().toString();
-            Consumer selectedConsumer = selector.select(key.getBytes());
+            PositionImpl position = PositionImpl.get(2, i);
+            Consumer selectedConsumer = selector.select(key.getBytes(), position);
             int count = selectionMap.computeIfAbsent(selectedConsumer.consumerName(), c -> 0);
             selectionMap.put(selectedConsumer.consumerName(), count + 1);
         }
@@ -75,7 +77,8 @@ public class ConsistentHashingStickyKeyConsumerSelectorTest {
 
         for (int i = 0; i < N; i++) {
             String key = UUID.randomUUID().toString();
-            Consumer selectedConsumer = selector.select(key.getBytes());
+            PositionImpl position = PositionImpl.get(3, i);
+            Consumer selectedConsumer = selector.select(key.getBytes(), position);
             int count = selectionMap.computeIfAbsent(selectedConsumer.consumerName(), c -> 0);
             selectionMap.put(selectedConsumer.consumerName(), count + 1);
         }
@@ -91,7 +94,8 @@ public class ConsistentHashingStickyKeyConsumerSelectorTest {
 
         for (int i = 0; i < N; i++) {
             String key = UUID.randomUUID().toString();
-            Consumer selectedConsumer = selector.select(key.getBytes());
+            PositionImpl position = PositionImpl.get(4, i);
+            Consumer selectedConsumer = selector.select(key.getBytes(), position);
             int count = selectionMap.computeIfAbsent(selectedConsumer.consumerName(), c -> 0);
             selectionMap.put(selectedConsumer.consumerName(), count + 1);
         }
@@ -106,7 +110,8 @@ public class ConsistentHashingStickyKeyConsumerSelectorTest {
 
         for (int i = 0; i < N; i++) {
             String key = UUID.randomUUID().toString();
-            Consumer selectedConsumer = selector.select(key.getBytes());
+            PositionImpl position = PositionImpl.get(5, i);
+            Consumer selectedConsumer = selector.select(key.getBytes(), position);
             int count = selectionMap.computeIfAbsent(selectedConsumer.consumerName(), c -> 0);
             selectionMap.put(selectedConsumer.consumerName(), count + 1);
         }
@@ -119,7 +124,8 @@ public class ConsistentHashingStickyKeyConsumerSelectorTest {
         selector.removeConsumer(consumer2);
         for (int i = 0; i < N; i++) {
             String key = UUID.randomUUID().toString();
-            Consumer selectedConsumer = selector.select(key.getBytes());
+            PositionImpl position = PositionImpl.get(6, i);
+            Consumer selectedConsumer = selector.select(key.getBytes(), position);
             int count = selectionMap.computeIfAbsent(selectedConsumer.consumerName(), c -> 0);
             selectionMap.put(selectedConsumer.consumerName(), count + 1);
         }
@@ -132,7 +138,8 @@ public class ConsistentHashingStickyKeyConsumerSelectorTest {
         selector.removeConsumer(consumer3);
         for (int i = 0; i < N; i++) {
             String key = UUID.randomUUID().toString();
-            Consumer selectedConsumer = selector.select(key.getBytes());
+            PositionImpl position = PositionImpl.get(7, i);
+            Consumer selectedConsumer = selector.select(key.getBytes(), position);
             int count = selectionMap.computeIfAbsent(selectedConsumer.consumerName(), c -> 0);
             selectionMap.put(selectedConsumer.consumerName(), count + 1);
         }

@@ -141,7 +141,7 @@ public class PersistentStreamingDispatcherSingleActiveConsumer extends Persisten
 
         if (isKeyHashRangeFiltered) {
             byte[] key = peekStickyKey(entry.getDataBuffer());
-            Consumer consumer = stickyKeyConsumerSelector.select(key);
+            Consumer consumer = stickyKeyConsumerSelector.select(key, entry.getPosition());
             // Skip the entry if it's not for current active consumer.
             if (consumer == null || currentConsumer != consumer) {
                 entry.release();

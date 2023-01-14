@@ -26,6 +26,9 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.apache.bookkeeper.mledger.impl.PositionImpl;
+import org.apache.distributedlog.Entry;
 import org.apache.pulsar.client.api.Range;
 import org.apache.pulsar.common.api.proto.IntRange;
 import org.apache.pulsar.common.api.proto.KeySharedMeta;
@@ -50,10 +53,10 @@ public class HashRangeExclusiveStickyKeyConsumerSelectorTest {
         Assert.assertEquals(selector.getRangeConsumer().size(),2);
         Consumer selectedConsumer;
         for (int i = 0; i < 3; i++) {
-            selectedConsumer = selector.select(i);
+            selectedConsumer = selector.select(i, PositionImpl.get(1, i));
             Assert.assertEquals(selectedConsumer, consumer1);
         }
-        selectedConsumer = selector.select(4);
+        selectedConsumer = selector.select(4, PositionImpl.get(1, 4));
         Assert.assertNull(selectedConsumer);
 
         Consumer consumer2 = mock(Consumer.class);
@@ -66,23 +69,23 @@ public class HashRangeExclusiveStickyKeyConsumerSelectorTest {
         Assert.assertEquals(selector.getRangeConsumer().size(),4);
 
         for (int i = 3; i < 10; i++) {
-            selectedConsumer = selector.select(i);
+            selectedConsumer = selector.select(i, PositionImpl.get(2, i));
             Assert.assertEquals(selectedConsumer, consumer2);
         }
 
         for (int i = 0; i < 3; i++) {
-            selectedConsumer = selector.select(i);
+            selectedConsumer = selector.select(i, PositionImpl.get(2, i));
             Assert.assertEquals(selectedConsumer, consumer1);
         }
 
         selector.removeConsumer(consumer1);
         Assert.assertEquals(selector.getRangeConsumer().size(),2);
-        selectedConsumer = selector.select(1);
+        selectedConsumer = selector.select(1, PositionImpl.get(2, 1));
         Assert.assertNull(selectedConsumer);
 
         selector.removeConsumer(consumer2);
         Assert.assertEquals(selector.getRangeConsumer().size(),0);
-        selectedConsumer = selector.select(5);
+        selectedConsumer = selector.select(5, PositionImpl.get(2, 5));
         Assert.assertNull(selectedConsumer);
     }
 

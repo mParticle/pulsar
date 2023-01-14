@@ -128,7 +128,7 @@ public class NonPersistentStickyKeyDispatcherMultipleConsumers extends NonPersis
         groupedEntries.clear();
 
         for (Entry entry : entries) {
-            Consumer consumer = selector.select(peekStickyKey(entry.getDataBuffer()));
+            Consumer consumer = selector.select(peekStickyKey(entry.getDataBuffer()), entry.getPosition());
             if (consumer != null) {
                 groupedEntries.computeIfAbsent(consumer, k -> new ArrayList<>()).add(entry);
             } else {

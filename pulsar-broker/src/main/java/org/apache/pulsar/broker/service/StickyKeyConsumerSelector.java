@@ -20,6 +20,7 @@ package org.apache.pulsar.broker.service;
 
 import java.util.List;
 import java.util.Map;
+import org.apache.bookkeeper.mledger.Position;
 import org.apache.pulsar.broker.service.BrokerServiceException.ConsumerAssignException;
 import org.apache.pulsar.client.api.Range;
 import org.apache.pulsar.common.util.Murmur3_32Hash;
@@ -45,10 +46,11 @@ public interface StickyKeyConsumerSelector {
      * Select a consumer by sticky key.
      *
      * @param stickyKey sticky key
+     * @param entryPosition the position of the message currently being routed
      * @return consumer
      */
-    default Consumer select(byte[] stickyKey) {
-        return select(makeStickyKeyHash(stickyKey));
+    default Consumer select(byte[] stickyKey, Position entryPosition) {
+        return select(makeStickyKeyHash(stickyKey), entryPosition);
     }
 
     static int makeStickyKeyHash(byte[] stickyKey) {
@@ -56,12 +58,20 @@ public interface StickyKeyConsumerSelector {
     }
 
     /**
-     * Select a consumer by hash.
+     * Select a consumer by hash.  Entry position is provided to allow for active message tracking.
      *
      * @param hash hash corresponding to sticky key
+     * @param entryPosition the position of the message currently being routed
      * @return consumer
      */
-    Consumer select(int hash);
+    Consumer select(int hash, Position entryPosition);
+
+    /**
+     * Releases a position from consumer tracking.
+     *
+     * @param entryPosition the position of the message no longer outstanding
+     */
+    void release(Position entryPosition);
 
     /**
      * Get key hash ranges handled by each consumer.

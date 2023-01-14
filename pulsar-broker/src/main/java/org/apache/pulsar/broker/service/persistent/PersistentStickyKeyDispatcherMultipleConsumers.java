@@ -216,7 +216,7 @@ public class PersistentStickyKeyDispatcherMultipleConsumers extends PersistentDi
 
         for (Entry entry : entries) {
             int stickyKeyHash = getStickyKeyHash(entry);
-            Consumer c = selector.select(stickyKeyHash);
+            Consumer c = selector.select(stickyKeyHash, entry.getPosition());
             if (c != null) {
                 groupedEntries.computeIfAbsent(c, k -> new ArrayList<>()).add(entry);
                 consumerStickyKeyHashesMap.computeIfAbsent(c, k -> new HashSet<>()).add(stickyKeyHash);
