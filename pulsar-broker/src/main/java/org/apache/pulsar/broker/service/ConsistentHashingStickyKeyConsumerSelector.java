@@ -127,6 +127,11 @@ public class ConsistentHashingStickyKeyConsumerSelector implements StickyKeyCons
     }
 
     @Override
+    public void release(Position entryPosition) {
+        // Not used by this implementation.
+    }
+
+    @Override
     public Map<Consumer, List<Range>> getConsumerKeyHashRanges() {
         Map<Consumer, List<Range>> result = new LinkedHashMap<>();
         rwLock.readLock().lock();

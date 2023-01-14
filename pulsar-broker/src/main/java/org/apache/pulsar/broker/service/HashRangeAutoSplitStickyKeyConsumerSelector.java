@@ -113,6 +113,11 @@ public class HashRangeAutoSplitStickyKeyConsumerSelector implements StickyKeyCon
     }
 
     @Override
+    public void release(Position entryPosition) {
+        // Not used by this implementation.
+    }
+
+    @Override
     public Map<Consumer, List<Range>> getConsumerKeyHashRanges() {
         Map<Consumer, List<Range>> result = new HashMap<>();
         int start = 0;

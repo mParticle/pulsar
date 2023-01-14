@@ -46,6 +46,7 @@ public interface StickyKeyConsumerSelector {
      * Select a consumer by sticky key.
      *
      * @param stickyKey sticky key
+     * @param entryPosition the position of the message currently being routed
      * @return consumer
      */
     default Consumer select(byte[] stickyKey, Position entryPosition) {
@@ -57,12 +58,20 @@ public interface StickyKeyConsumerSelector {
     }
 
     /**
-     * Select a consumer by hash.
+     * Select a consumer by hash.  Entry position is provided to allow for active message tracking.
      *
      * @param hash hash corresponding to sticky key
+     * @param entryPosition the position of the message currently being routed
      * @return consumer
      */
     Consumer select(int hash, Position entryPosition);
+
+    /**
+     * Releases a position from consumer tracking.
+     *
+     * @param entryPosition the position of the message no longer outstanding
+     */
+    void release(Position entryPosition);
 
     /**
      * Get key hash ranges handled by each consumer.

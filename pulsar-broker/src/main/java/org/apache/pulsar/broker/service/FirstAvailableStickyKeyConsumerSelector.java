@@ -46,7 +46,7 @@ public class FirstAvailableStickyKeyConsumerSelector implements StickyKeyConsume
     @Override
     public void addConsumer(Consumer consumer) throws ConsumerAssignException {
         synchronized (this) {
-            // Insert the new consumer in the assignments tracking map
+            // Insert the new consumer in the assignments tracking map.
             consumerAssignments.put(consumer, new HashMap<Integer, Integer>());
         }
     }
@@ -56,7 +56,8 @@ public class FirstAvailableStickyKeyConsumerSelector implements StickyKeyConsume
         synchronized (this) {
             // We may want to clean up the entryHashes map after losing a consumer but for now
             // it seems safe to assume those messages will eventually get redelivered/reinserted anyhow.
-            // Removing the consumer from the assignments tracker will suffice to stop it getting new work.
+            // Removing the consumer from the assignments tracker will suffice to stop it getting new work,
+            // and allow the outstanding keys to be routed elsewhere.
             Map<Integer, Integer> removedConsumerHashes = consumerAssignments.remove(consumer);
             for (Integer hashToRemove: removedConsumerHashes.keySet()) {
                 hashAssignments.remove(hashToRemove);
@@ -68,7 +69,7 @@ public class FirstAvailableStickyKeyConsumerSelector implements StickyKeyConsume
     public Consumer select(int hash, Position entryPosition) {
         synchronized (this) {
             if (consumerAssignments.isEmpty()) {
-                // There are no consumers
+                // There are no consumers.
                 return null;
             }
 
@@ -80,7 +81,7 @@ public class FirstAvailableStickyKeyConsumerSelector implements StickyKeyConsume
             return hashAssignments.compute(hash, (key, consumer) -> {
                 if (consumer == null) {
                     // No consumer is currently working this routing key, find the next available.
-                    // For now just pick the first one we find with permits
+                    // For now just pick the first one we find with permits.
                     for (Consumer potential: consumerAssignments.keySet()) {
                         if (potential.getAvailablePermits() > 0) {
                             consumer = potential;
@@ -99,6 +100,43 @@ public class FirstAvailableStickyKeyConsumerSelector implements StickyKeyConsume
 
                 return consumer;
             });
+        }
+    }
+
+    @Override
+    public void release(Position entryPosition) {
+        synchronized (this) {
+            // Clean up entryHashes no matter what, entryPositions will be unique.
+            Integer hash = entryHashes.remove(entryPosition);
+
+            if (hash != null) {
+                Consumer assignedConsumer = hashAssignments.get(hash);
+                if (assignedConsumer == null) {
+                    // There was no consumer assigned so nothing left to deal with.
+                    return;
+                }
+
+                Map<Integer, Integer> referenceCounts = consumerAssignments.get(assignedConsumer);
+                if (referenceCounts == null) {
+                    // This may indicate an invalid state; throw exception instead?
+                    return;
+                }
+
+                referenceCounts.computeIfPresent(hash, (unused, currentCount) -> {
+                    if (currentCount == null) {
+                        // This may also mean invalid state.
+                        return null;
+                    }
+                    Integer newCount = currentCount - 1;
+                    if (newCount == 0) {
+                        // If this was the last instance of this hash, remove it from the hash assignments
+                        // as well as the consumer.
+                        hashAssignments.remove(hash);
+                        return null;
+                    }
+                    return newCount;
+                });
+            }
         }
     }
 

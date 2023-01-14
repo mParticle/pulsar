@@ -143,6 +143,11 @@ public class HashRangeExclusiveStickyKeyConsumerSelector implements StickyKeyCon
         }
     }
 
+    @Override
+    public void release(Position entryPosition) {
+        // Not used by this implementation.
+    }
+
     Map<Integer, Consumer> getRangeConsumer() {
         return Collections.unmodifiableMap(rangeMap);
     }
